@@ -12,7 +12,11 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 
-var requestHandler = function(request, response) {
+var exports = module.exports = {};
+
+var messages = [];
+
+exports.requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
   // They include information about both the incoming request, such as
@@ -28,7 +32,6 @@ var requestHandler = function(request, response) {
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
   console.log("Serving request type " + request.method + " for url " + request.url);
-
   // The outgoing status.
   var statusCode = 200;
 
@@ -45,6 +48,23 @@ var requestHandler = function(request, response) {
   // which includes the status and all headers.
   response.writeHead(statusCode, headers);
 
+  if(request.method === 'GET'){
+    headers['Content-Type'] = "application/json";
+    response.writeHead(statusCode, headers);
+
+    response.write(JSON.stringify(messages));
+  }
+
+  if(request.method === 'POST'){
+    response.writeHead(statusCode, headers);
+    request.on('data', function(chunk){
+      var data = JSON.parse(chunk.toString());
+      data.objectId = messages.length;
+      data.createdAt = new Date();
+      data.updatedAt = new Date();
+      messages.push(data);
+    });
+  }
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
   // response.end() will be the body of the response - i.e. what shows
@@ -52,7 +72,7 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end("Hello, World!");
+  response.end();
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
