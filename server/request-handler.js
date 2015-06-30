@@ -43,27 +43,41 @@ exports.requestHandler = function(request, response) {
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
   headers['Content-Type'] = "text/plain";
+  if(!(request.url === '/classes/messages' || request.url === '/classes/room1')){
+    response.writeHead(404, headers);
+    response.end("Bad URL!");
+    return;
+  }
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
   response.writeHead(statusCode, headers);
-
   if(request.method === 'GET'){
     headers['Content-Type'] = "application/json";
     response.writeHead(statusCode, headers);
 
-    response.write(JSON.stringify(messages));
+    response.write(JSON.stringify({results:messages}));
   }
 
   if(request.method === 'POST'){
-    response.writeHead(statusCode, headers);
+    response.writeHead(201, headers);
+
+    cumulate = "";
     request.on('data', function(chunk){
-      var data = JSON.parse(chunk.toString());
+      cumulate += chunk;
+    });
+
+    request.on('end', function() {
+      console.log(cumulate);
+      console.log(JSON.parse(cumulate));
+      var data = JSON.parse(cumulate);
       data.objectId = messages.length;
       data.createdAt = new Date();
       data.updatedAt = new Date();
       messages.push(data);
-    });
+    })
+    response.write(JSON.stringify({results:messages}));
+    console.log(messages);
   }
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
