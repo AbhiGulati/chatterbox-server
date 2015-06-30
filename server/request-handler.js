@@ -13,8 +13,9 @@ this file and include it in basic-server.js so that it actually works.
 **************************************************************/
 
 var exports = module.exports = {};
+var fs = require("fs");
 
-var messages = [];
+var messages = require("./testFile.json");
 
 exports.requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -75,6 +76,7 @@ exports.requestHandler = function(request, response) {
       data.createdAt = new Date();
       data.updatedAt = new Date();
       messages.push(data);
+      fs.writeFile("testFile.json", JSON.stringify(messages), "utf8");
     })
     response.write(JSON.stringify({results:messages}));
     console.log(messages);
