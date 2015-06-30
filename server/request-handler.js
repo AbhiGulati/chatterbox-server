@@ -18,6 +18,7 @@ var fs = require("fs");
 var messages = require("./testFile.json");
 
 exports.requestHandler = function(request, response) {
+  debugger;
   // Request and Response come from node's http module.
   //
   // They include information about both the incoming request, such as
@@ -57,7 +58,7 @@ exports.requestHandler = function(request, response) {
     headers['Content-Type'] = "application/json";
     response.writeHead(statusCode, headers);
 
-    response.write(JSON.stringify({results:messages}));
+    response.end(JSON.stringify({results:messages}));
   }
 
   if(request.method === 'POST'){
@@ -69,17 +70,18 @@ exports.requestHandler = function(request, response) {
     });
 
     request.on('end', function() {
-      console.log(cumulate);
-      console.log(JSON.parse(cumulate));
+      debugger;
+      // console.log("cumulate total", cumulate);
+      // console.log("parsed cumulate", JSON.parse(cumulate));
       var data = JSON.parse(cumulate);
       data.objectId = messages.length;
       data.createdAt = new Date();
       data.updatedAt = new Date();
       messages.push(data);
+      console.log("messages", messages);
       fs.writeFile("testFile.json", JSON.stringify(messages), "utf8");
+      response.end(JSON.stringify({results:messages}));
     })
-    response.write(JSON.stringify({results:messages}));
-    console.log(messages);
   }
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
@@ -88,7 +90,6 @@ exports.requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end();
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).

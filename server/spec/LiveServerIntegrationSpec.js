@@ -37,14 +37,16 @@ describe('server', function() {
   it('should accept POST requests', function(done) {
     var requestParams = {method: 'POST',
       uri: 'http://127.0.0.1:3000/classes/messages',
+      async: false,
       json: {
         username: 'Jono',
-        message: 'Do my bidding!'}
+        text: 'Do my bidding!'}
     };
 
     request(requestParams, function(error, response, body) {
       console.log(body);
-      parsedBody = JSON.parse(body);
+      console.log(body.toString())
+      parsedBody = body;
       expect(response.statusCode).to.equal(201);
       done();
     });
@@ -53,6 +55,7 @@ describe('server', function() {
   it('should respond with messages that were previously posted', function(done) {
     var requestParams = {method: 'POST',
       uri: 'http://127.0.0.1:3000/classes/messages',
+      async: false,
       json: {
         username: 'Jono',
         text: 'Do my bidding!'}
@@ -64,8 +67,6 @@ describe('server', function() {
       request('http://127.0.0.1:3000/classes/messages',
         function(error, response, body) {
           var messages = JSON.parse(body).results;
-          // console.log(response);
-          // console.log(body);
           console.log(messages)
           expect(messages[0].username).to.equal('Jono');
           expect(messages[0].text).to.equal('Do my bidding!');
